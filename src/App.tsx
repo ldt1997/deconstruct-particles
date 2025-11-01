@@ -22,17 +22,20 @@ export default function App() {
         <div style={{ marginBottom: 12 }}>
           <Toolbar />
         </div>
-        <PaperWrapper
+        {/* FIXME: PaperWrapper not working properly */}
+        {/* <PaperWrapper
           colorFront={config.colorFront || "#9fadbc"}
           roughness={config.roughness || 0.4}
-        >
+        > */}
           {config.imageUrl && (
             <CanvasPane
               imageUrl={config.imageUrl}
               layout={config.layout || "vertical"}
+              dotSize={(config.dotSize || 5) * 5}
+              background={config.colorFront || "#9fadbc"}
             />
           )}
-        </PaperWrapper>
+        {/* </PaperWrapper> */}
       </Content>
       <Sider
         style={{

@@ -24,12 +24,12 @@ export default function ConfigForm({
       <Upload
         listType="picture-card"
         accept="image/*"
+        limit={1}
         autoUpload={false} // 禁用自动上传
         onChange={(files) => {
           const file = files[0]
           if (file?.originFile) {
             const localUrl = URL.createObjectURL(file.originFile)
-            console.log('Generated preview URL:', localUrl)
             update('imageUrl', localUrl)
           }
         }}
