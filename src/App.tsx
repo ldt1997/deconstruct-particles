@@ -1,24 +1,49 @@
-import { Layout, Message } from '@arco-design/web-react'
-import { useEffect } from 'react'
-const { Sider, Content } = Layout
+import { Layout } from "@arco-design/web-react";
+import { useEffect, useState } from "react";
+import Toolbar from "./components/Toolbar";
+import CanvasPane from "./components/CanvasPane";
+import ConfigForm from "./components/ConfigForm";
+import PaperWrapper from "./components/PaperWrapper";
+import { useDotsStore } from "./store/useDotsStore";
+
+const { Sider, Content } = Layout;
 
 export default function App() {
+  const { reset } = useDotsStore();
+  const [config, setConfig] = useState<any>({});
+
   useEffect(() => {
-    Message.info('Deconstruct Particles – workspace ready')
-  }, [])
+    reset();
+  }, [config.imageUrl]);
 
   return (
-    <Layout style={{ height: '100vh' }}>
+    <Layout style={{ height: "100vh" }}>
       <Content style={{ flex: 1, padding: 12 }}>
-        {/* 左侧：操作栏 + 画布区（70%） */}
-        <div style={{ height: '100%', borderRadius: 12, border: '1px solid #eee' }}>
-          {/* TODO: Toolbar + Canvas */}
+        <div style={{ marginBottom: 12 }}>
+          <Toolbar />
         </div>
+        <PaperWrapper
+          colorFront={config.colorFront || "#9fadbc"}
+          roughness={config.roughness || 0.4}
+        >
+          {config.imageUrl && (
+            <CanvasPane
+              imageUrl={config.imageUrl}
+              layout={config.layout || "vertical"}
+            />
+          )}
+        </PaperWrapper>
       </Content>
-      <Sider style={{ width: '30%', minWidth: 320, padding: 12, borderLeft: '1px solid #eee' }}>
-        {/* 右侧：配置表单 */}
-        {/* TODO: Config Form */}
+      <Sider
+        style={{
+          width: "30%",
+          minWidth: 320,
+          padding: 12,
+          borderLeft: "1px solid #eee",
+        }}
+      >
+        <ConfigForm onChange={setConfig} />
       </Sider>
     </Layout>
-  )
+  );
 }

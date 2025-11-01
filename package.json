@@ -12,11 +12,13 @@
   "dependencies": {
     "@arco-design/web-react": "^2.66.7",
     "@paper-design/shaders-react": "^0.0.61",
+    "html2canvas": "^1.4.1",
     "immer": "^10.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tinycolor2": "^1.6.0",
     "use-undo": "^1.1.1",
+    "uuid": "^13.0.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
