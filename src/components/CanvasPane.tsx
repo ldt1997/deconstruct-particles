@@ -126,8 +126,8 @@ export default function CanvasPane({
 
   const containerStyle =
     layout === "vertical"
-      ? { display: "flex", flexDirection: "row" }
-      : { display: "flex", flexDirection: "column" };
+      ? { display: "flex", flexDirection: "column-reverse", }
+      : { display: "flex", flexDirection: "row" };
 
   return (
     <div style={containerStyle} id="canvas-pane">

@@ -1,85 +1,112 @@
 import {
   Upload,
   Select,
-  InputNumber,
   Slider,
   ColorPicker,
+  Form,
 } from "@arco-design/web-react";
 import { useState } from "react";
 
 export default function ConfigForm({
   onChange,
 }: {
-  onChange: (config: unknown) => void;
+  onChange: (config: Record<string, unknown>) => void;
 }) {
   const [config, setConfig] = useState({
     layout: "vertical",
     colorFront: "#9fadbc",
     roughness: 0.4,
+    dotSize: 5,
   });
 
   const update = (k: string, v: unknown) => {
     const newCfg = { ...config, [k]: v };
-    console.log("config updated:", newCfg);
     setConfig(newCfg);
     onChange(newCfg);
   };
 
+  // 🔧 上传图片并自动判断方向
+  const handleUpload = (files: any[]) => {
+    const file = files[0];
+    if (!file?.originFile) return;
+
+    const localUrl = URL.createObjectURL(file.originFile);
+
+    // 加载图片判断宽高
+    const img = new Image();
+    img.onload = () => {
+      const layout = img.width >= img.height ? "vertical" : "horizontal";
+      console.log("Detected layout:", layout, img.width, img.height);
+      const newConfig = { ...config, layout, imageUrl: localUrl };
+      setConfig(newConfig);
+      onChange(newConfig);
+    };
+    img.src = localUrl;
+  };
+
   return (
-    // TODO: 使用 Form 和 FormItem
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <Upload
-        drag
-        showUploadList={{ startIcon: null, progressRender: () => <></> }}
-        accept="image/*"
-        limit={1}
-        autoUpload={false} // 禁用自动上传
-        onChange={(files) => {
-          // TODO: 如果图片是长的，设置layout为horizontal，宽的设置为vertical
-          const file = files[0];
-          if (file?.originFile) {
-            const localUrl = URL.createObjectURL(file.originFile);
-            update("imageUrl", localUrl);
-          }
-        }}
-      >
-        Upload Image
-      </Upload>
+    <Form
+      layout="vertical"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        padding: 8,
+      }}
+    >
+      <Form.Item label="Upload Image">
+        <Upload
+          drag
+          showUploadList={{ startIcon: null, progressRender: () => <></> }}
+          accept="image/*"
+          limit={1}
+          autoUpload={false}
+          onChange={handleUpload}
+        >
+          Click or drag an image here
+        </Upload>
+      </Form.Item>
 
-      <Select
-        value={config.layout}
-        onChange={(v) => update("layout", v)}
-        options={[
-          { label: "Vertical", value: "vertical" },
-          { label: "Horizontal", value: "horizontal" },
-        ]}
-      />
+      <Form.Item label="Layout">
+        <Select
+          value={config.layout}
+          onChange={(v) => update("layout", v)}
+          options={[
+            { label: "Vertical (up-down)", value: "vertical" },
+            { label: "Horizontal (side-by-side)", value: "horizontal" },
+          ]}
+        />
+      </Form.Item>
 
-      <div>
-        Background color:
+      <Form.Item label="Background color">
         <ColorPicker
           value={config.colorFront}
+          showText
+          disabledAlpha
           onChange={(v) => update("colorFront", v)}
         />
-      </div>
+      </Form.Item>
 
-      <div>
-        Roughness:
+      <Form.Item label="Roughness">
         <Slider
           value={config.roughness}
           onChange={(v) => update("roughness", v)}
+          min={0}
+          max={1}
+          step={0.05}
         />
-      </div>
+      </Form.Item>
 
-      <div>
-        Dot size:
-        <InputNumber
-          defaultValue={5}
+      <Form.Item label="Dot size">
+        <Slider
           min={1}
-          max={20}
+          defaultValue={5}
+          value={config.dotSize}
           onChange={(v) => update("dotSize", v)}
+          max={10}
+          step={1}
         />
-      </div>
-    </div>
+      </Form.Item>
+    </Form>
   );
 }
