@@ -21,11 +21,7 @@ export default function App() {
         <div style={{ marginBottom: 12 }}>
           <Toolbar />
         </div>
-        {config.imageUrl && (
-          <CanvasPane
-            config={config}
-          />
-        )}
+        {config.imageUrl && <CanvasPane config={config} />}
       </Content>
       <Sider
         style={{

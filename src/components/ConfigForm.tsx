@@ -14,9 +14,9 @@ export default function ConfigForm({
 }) {
   const [config, setConfig] = useState({
     layout: "vertical",
-    colorFront: "#9fadbc",
+    background: "#9fadbc",
     roughness: 0.4,
-    dotSize: 5,
+    dotSize: 10,
   });
 
   const update = (k: string, v: unknown) => {
@@ -80,10 +80,10 @@ export default function ConfigForm({
 
       <Form.Item label="Background color">
         <ColorPicker
-          value={config.colorFront}
+          value={config.background}
           showText
           disabledAlpha
-          onChange={(v) => update("colorFront", v)}
+          onChange={(v) => update("background", v)}
         />
       </Form.Item>
 
@@ -99,11 +99,10 @@ export default function ConfigForm({
 
       <Form.Item label="Dot size">
         <Slider
-          min={1}
-          defaultValue={5}
+          min={5}
+          max={15}
           value={config.dotSize}
           onChange={(v) => update("dotSize", v)}
-          max={10}
           step={1}
         />
       </Form.Item>

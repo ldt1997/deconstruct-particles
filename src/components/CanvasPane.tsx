@@ -3,36 +3,31 @@ import { useDotsStore } from "../store/useDotsStore";
 import { v4 as uuid } from "uuid";
 import { PaperTexture } from "@paper-design/shaders-react";
 
-interface Props {
-  config: {
-    imageUrl: string;
-    layout: "vertical" | "horizontal";
-    dotSize?: number;
-    roughness?: number;
-    background?: string;
-  };
+interface CanvasConfig {
+  imageUrl?: string;
+  layout?: "vertical" | "horizontal";
+  dotSize?: number;
+  roughness?: number;
+  background?: string;
 }
 
-export default function CanvasPane({ config = {} }: Props) {
+export default function CanvasPane({ config }: { config: CanvasConfig }) {
   const {
-    imageUrl,
-    layout,
-    roughness,
-    dotSize = 5,
+    imageUrl = "",
+    layout = "vertical",
+    dotSize = 10,
+    roughness = 0.4,
     background = "#9fadbc",
   } = config;
+
   const photoRef = useRef<HTMLCanvasElement>(null);
   const artRef = useRef<HTMLCanvasElement>(null);
   const [img, setImg] = useState<HTMLImageElement | null>(null);
-  const [imgSize, setImgSize] = useState<{ width: number; height: number }>({
-    width: 0,
-    height: 0,
-  });
-  const [artUrl, setArtUrl] = useState<string | undefined>();
-  // TODO: dots history for undo
-  const { dots, addDot } = useDotsStore();
+  const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
+  const [artUrl, setArtUrl] = useState<string>();
+  const { addDot } = useDotsStore();
 
-  // 加载图像
+  /** 加载图像 */
   useEffect(() => {
     if (!imageUrl) return;
     const i = new Image();
@@ -41,37 +36,39 @@ export default function CanvasPane({ config = {} }: Props) {
     i.src = imageUrl;
   }, [imageUrl]);
 
-  // 当图片加载完成，绘制到左侧 canvas
+  /** 绘制初始图像 */
   useEffect(() => {
     if (!img || !photoRef.current || !artRef.current) return;
+
     const { width, height } = fitImageToCanvas(img, 35);
     setImgSize({ width, height });
 
-    // 同步：两张画布的“内部尺寸”和“CSS 尺寸”
+    // 同步画布尺寸
     [photoRef.current, artRef.current].forEach((c) => {
-      c.width = width; // 内部绘制宽高（像素坐标系）
+      c.width = width;
       c.height = height;
-      c.style.width = `${width}px`; // CSS 尺寸（显示）
+      c.style.width = `${width}px`;
       c.style.height = `${height}px`;
     });
 
-    // 先把原图画到左侧
     const pctx = photoRef.current.getContext("2d")!;
     pctx.clearRect(0, 0, width, height);
     pctx.drawImage(img, 0, 0, width, height);
 
-    // 给右侧填背景
     const actx = artRef.current.getContext("2d")!;
     actx.clearRect(0, 0, width, height);
     actx.fillStyle = background;
     actx.fillRect(0, 0, width, height);
 
-    //更新 artUrl 状态
-    const newUrl = artRef.current.toDataURL("image/png");
-    setArtUrl(newUrl);
-  }, [background, img]);
+    updatePaperTexture(artRef.current.toDataURL("image/png"));
+  }, [img, background]);
 
-  // 处理点击事件
+  const updatePaperTexture = (url?: string) => {
+    const newUrl = url || artRef?.current?.toDataURL("image/png");
+    if (newUrl) setArtUrl(newUrl);
+  };
+
+  /** 点击事件：裁剪圆形贴片 + 更新 PaperTexture */
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!photoRef.current || !artRef.current) return;
     const rect = photoRef.current.getBoundingClientRect();
@@ -79,10 +76,10 @@ export default function CanvasPane({ config = {} }: Props) {
     const y = e.clientY - rect.top;
     const r = dotSize;
 
-    const photoCtx = photoRef.current.getContext("2d")!;
-    const artCtx = artRef.current.getContext("2d")!;
+    const pctx = photoRef.current.getContext("2d")!;
+    const actx = artRef.current.getContext("2d")!;
 
-    // 🟢 1. 从左侧 canvas 拷贝圆形区域（而非 img）
+    // 从左侧 canvas 拷贝圆形区域
     const circle = document.createElement("canvas");
     circle.width = r * 2;
     circle.height = r * 2;
@@ -91,7 +88,7 @@ export default function CanvasPane({ config = {} }: Props) {
     cctx.arc(r, r, r, 0, Math.PI * 2);
     cctx.clip();
     cctx.drawImage(
-      photoRef.current, // ✅ 注意这里
+      photoRef.current,
       x - r,
       y - r,
       r * 2,
@@ -102,33 +99,32 @@ export default function CanvasPane({ config = {} }: Props) {
       r * 2
     );
 
-    // 🟢 2. 在右侧画布贴片（两个 canvas 尺寸相同，坐标可直接对应）
-    artCtx.save();
-    artCtx.beginPath();
-    artCtx.arc(x, y, r, 0, Math.PI * 2);
-    artCtx.clip();
-    artCtx.drawImage(circle, x - r, y - r);
-    artCtx.restore();
+    // 在右侧画布贴片
+    actx.save();
+    actx.beginPath();
+    actx.arc(x, y, r, 0, Math.PI * 2);
+    actx.clip();
+    actx.drawImage(circle, x - r, y - r, r * 2, r * 2);
+    actx.restore();
 
-    // 更新 artUrl 状态
-    const newUrl = artRef.current.toDataURL("image/png");
-    setArtUrl(newUrl);
+    // 更新 PaperTexture 预览
+    updatePaperTexture(artRef.current.toDataURL("image/png"));
 
-    // 🟢 3. 左侧挖空 + 背景填充
-    photoCtx.save();
-    photoCtx.globalCompositeOperation = "destination-out";
-    photoCtx.beginPath();
-    photoCtx.arc(x, y, r, 0, Math.PI * 2);
-    photoCtx.fill();
-    photoCtx.restore();
+    // 左侧挖空 + 填充背景
+    pctx.save();
+    pctx.globalCompositeOperation = "destination-out";
+    pctx.beginPath();
+    pctx.arc(x, y, r, 0, Math.PI * 2);
+    pctx.fill();
+    pctx.restore();
 
-    photoCtx.save();
-    photoCtx.globalCompositeOperation = "destination-over";
-    photoCtx.fillStyle = background;
-    photoCtx.beginPath();
-    photoCtx.arc(x, y, r, 0, Math.PI * 2);
-    photoCtx.fill();
-    photoCtx.restore();
+    pctx.save();
+    pctx.globalCompositeOperation = "destination-over";
+    pctx.fillStyle = background;
+    pctx.beginPath();
+    pctx.arc(x, y, r, 0, Math.PI * 2);
+    pctx.fill();
+    pctx.restore();
 
     addDot({
       id: uuid(),
@@ -138,47 +134,67 @@ export default function CanvasPane({ config = {} }: Props) {
     });
   };
 
-  const containerStyle =
+  /** 布局样式 */
+  const containerStyle: React.CSSProperties =
     layout === "vertical"
       ? { display: "flex", flexDirection: "column-reverse" }
       : { display: "flex", flexDirection: "row" };
 
   return (
     <div style={containerStyle} id="canvas-pane">
-      {/* FIXME: background color didn't change in photoRef dots */}
       <canvas
         ref={photoRef}
+        onClick={handleClick}
         style={{
           height: imgSize.height,
           width: imgSize.width,
           cursor: "crosshair",
         }}
-        onClick={handleClick}
       />
-      <div>
-        {/* TODO: 更改布局使PaperTexture和canvas完全重叠，PaperTexture在顶层 */}
+
+      {/* 🔧 重叠布局区：artCanvas + PaperTexture */}
+      <div
+        style={{
+          position: "relative",
+          width: imgSize.width,
+          height: imgSize.height,
+        }}
+      >
+        {/* 底层：纯 canvas 绘制 */}
         <canvas
           ref={artRef}
           style={{
-            height: imgSize.height,
-            width: imgSize.width,
-            background: background,
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
           }}
         />
-        <PaperTexture
-          width={imgSize.width}
-          height={imgSize.height}
-          image={artUrl}
-          scale={1}
-          colorFront={background}
-          roughness={roughness}
-        />
+
+        {/* 顶层：纸纹理叠加 */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none", // ✅ 避免遮挡交互
+          }}
+        >
+          <PaperTexture
+            width={imgSize.width}
+            height={imgSize.height}
+            image={artUrl}
+            scale={1}
+            colorFront={background}
+            colorBack="#fff"
+            roughness={roughness}
+          />
+        </div>
       </div>
     </div>
   );
 }
 
-// 让图片适配视窗，长边 <= 60vw
+/** 图片自适配（长边 <= maxVW） */
 function fitImageToCanvas(img: HTMLImageElement, maxVW: number) {
   const vw = window.innerWidth;
   const maxWidth = (vw * maxVW) / 100;
