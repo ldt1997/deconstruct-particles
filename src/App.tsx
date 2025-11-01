@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import Toolbar from "./components/Toolbar";
 import CanvasPane from "./components/CanvasPane";
 import ConfigForm from "./components/ConfigForm";
-import PaperWrapper from "./components/PaperWrapper";
 import { useDotsStore } from "./store/useDotsStore";
 
 const { Sider, Content } = Layout;
@@ -22,20 +21,11 @@ export default function App() {
         <div style={{ marginBottom: 12 }}>
           <Toolbar />
         </div>
-        {/* FIXME: PaperWrapper not working properly */}
-        {/* <PaperWrapper
-          colorFront={config.colorFront || "#9fadbc"}
-          roughness={config.roughness || 0.4}
-        > */}
-          {config.imageUrl && (
-            <CanvasPane
-              imageUrl={config.imageUrl}
-              layout={config.layout || "vertical"}
-              dotSize={(config.dotSize || 5) * 5}
-              background={config.colorFront || "#9fadbc"}
-            />
-          )}
-        {/* </PaperWrapper> */}
+        {config.imageUrl && (
+          <CanvasPane
+            config={config}
+          />
+        )}
       </Content>
       <Sider
         style={{
