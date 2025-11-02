@@ -14,9 +14,12 @@ export default function ConfigForm({
 }) {
   const [config, setConfig] = useState({
     layout: "vertical",
-    background: "#9fadbc",
+    background: "#F4ECE4",
     roughness: 0.4,
-    dotSize: 10,
+    dotSize: 16,
+    contrast: 0.3,
+    fiber: 0.3,
+    folds: 0.5,
   });
 
   const update = (k: string, v: unknown) => {
@@ -86,6 +89,64 @@ export default function ConfigForm({
         />
       </Form.Item>
 
+      {/* TODO: 优化展示 增加dot size 预览 */}
+      {/* <Form.Item label="Dot size">
+        <Slider
+          min={5}
+          max={15}
+          value={config.dotSize}
+          onChange={(v) => update("dotSize", v)}
+          step={1}
+        />
+      </Form.Item> */}
+
+      <Form.Item label="Dot size">
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Slider
+            min={6}
+            max={24}
+            value={config.dotSize}
+            onChange={(v) => update("dotSize", v)}
+            step={2}
+            style={{ flex: 1 }}
+          />
+
+          {/* 🔵 圆点预览 */}
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "1px solid #ddd",
+              borderRadius: 6,
+              background: "#fff",
+            }}
+          >
+            <div
+              style={{
+                width: config.dotSize * 2,
+                height: config.dotSize * 2,
+                borderRadius: "50%",
+                backgroundColor: config.background, // 可用config.colorFront更一致
+                transition: "width 0.2s, height 0.2s",
+              }}
+            />
+          </div>
+        </div>
+      </Form.Item>
+
+      <Form.Item label="Contrast">
+        <Slider
+          value={config.contrast}
+          onChange={(v) => update("contrast", v)}
+          min={0}
+          max={1}
+          step={0.05}
+        />
+      </Form.Item>
+
       <Form.Item label="Roughness">
         <Slider
           value={config.roughness}
@@ -96,13 +157,23 @@ export default function ConfigForm({
         />
       </Form.Item>
 
-      <Form.Item label="Dot size">
+      <Form.Item label="Fiber">
         <Slider
-          min={5}
-          max={15}
-          value={config.dotSize}
-          onChange={(v) => update("dotSize", v)}
-          step={1}
+          value={config.fiber}
+          onChange={(v) => update("fiber", v)}
+          min={0}
+          max={1}
+          step={0.05}
+        />
+      </Form.Item>
+
+      <Form.Item label="Folds">
+        <Slider
+          value={config.folds}
+          onChange={(v) => update("folds", v)}
+          min={0}
+          max={1}
+          step={0.05}
         />
       </Form.Item>
     </Form>

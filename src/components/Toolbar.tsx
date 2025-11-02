@@ -1,17 +1,27 @@
-import { Button, Space, Tooltip } from '@arco-design/web-react'
-import { IconUndo, IconRedo, IconRefresh, IconDownload, IconDice } from '@arco-design/web-react/icon'
-import { useDotsStore } from '../store/useDotsStore'
-import { downloadImage } from '../utils/downloadImage'
+import { Button, Space, Tooltip } from "@arco-design/web-react";
+import {
+  IconUndo,
+  IconRedo,
+  IconRefresh,
+  IconDownload,
+  IconDice,
+} from "@arco-design/web-react/icon";
+import { useDotsStore } from "../store/useDotsStore";
+import { downloadImage } from "../utils/downloadImage";
 
 export default function Toolbar() {
-  const { undo, redo, reset, randomize } = useDotsStore()
+  const { undo, redo, reset, randomize, history, future } = useDotsStore();
   return (
     <Space>
       <Tooltip content="Undo">
-        <Button icon={<IconUndo />} onClick={undo} />
+        <Button
+          icon={<IconUndo />}
+          onClick={undo}
+          disabled={!history?.length}
+        />
       </Tooltip>
       <Tooltip content="Redo">
-        <Button icon={<IconRedo />} onClick={redo} />
+        <Button icon={<IconRedo />} onClick={redo} disabled={!future?.length} />
       </Tooltip>
       <Tooltip content="Randomize">
         <Button icon={<IconDice />} onClick={randomize} />
@@ -19,9 +29,13 @@ export default function Toolbar() {
       <Tooltip content="Reset">
         <Button icon={<IconRefresh />} onClick={reset} />
       </Tooltip>
+      {/* FIXME: don't work now */}
       <Tooltip content="Download">
-        <Button icon={<IconDownload />} onClick={() => downloadImage('canvas-pane')} />
+        <Button
+          icon={<IconDownload />}
+          onClick={() => downloadImage("canvas-pane")}
+        />
       </Tooltip>
     </Space>
-  )
+  );
 }

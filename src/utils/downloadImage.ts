@@ -1,10 +1,13 @@
-export function downloadImage(id: string) {
-  const el = document.getElementById(id)
-  if (!el) return
-  html2canvas(el as HTMLElement).then((canvas) => {
-    const link = document.createElement('a')
-    link.download = 'deconstruct-particles.png'
-    link.href = canvas.toDataURL('image/png')
-    link.click()
-  })
+export function downloadImage(elementId: string, filename = "artwork.png") {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  import("html2canvas").then(({ default: html2canvas }) => {
+    html2canvas(el as HTMLElement, { useCORS: true }).then((canvas) => {
+      const link = document.createElement("a");
+      link.download = filename;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  });
 }
