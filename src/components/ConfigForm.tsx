@@ -50,8 +50,7 @@ export default function ConfigForm({
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: 16,
-        padding: 8,
+        padding: 12,
       }}
     >
       <Form.Item label="Upload Image">
@@ -67,6 +66,15 @@ export default function ConfigForm({
         </Upload>
       </Form.Item>
 
+      <Form.Item label="Background color">
+        <ColorPicker
+          value={config.background}
+          showText
+          disabledAlpha
+          onChange={(v) => update("background", v)}
+        />
+      </Form.Item>
+
       <Form.Item label="Layout">
         <Select
           value={config.layout}
@@ -75,15 +83,6 @@ export default function ConfigForm({
             { label: "Vertical (up-down)", value: "vertical" },
             { label: "Horizontal (side-by-side)", value: "horizontal" },
           ]}
-        />
-      </Form.Item>
-
-      <Form.Item label="Background color">
-        <ColorPicker
-          value={config.background}
-          showText
-          disabledAlpha
-          onChange={(v) => update("background", v)}
         />
       </Form.Item>
 

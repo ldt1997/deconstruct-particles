@@ -17,7 +17,7 @@ export default function App() {
 
   return (
     <Layout style={{ height: "100vh" }}>
-      <Content style={{ flex: 1, padding: 12 }}>
+      <Content style={{ flex: 1, padding: 24 }}>
         <div style={{ marginBottom: 12 }}>
           <Toolbar />
         </div>

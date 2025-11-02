@@ -40,7 +40,7 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
   useEffect(() => {
     if (!img || !photoRef.current || !artRef.current) return;
 
-    const { width, height } = fitImageToCanvas(img, 35);
+    const { width, height } = fitImageToCanvas(img);
     setImgSize({ width, height });
 
     // 同步画布尺寸
@@ -194,14 +194,23 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
   );
 }
 
-/** 图片自适配（长边 <= maxVW） */
-function fitImageToCanvas(img: HTMLImageElement, maxVW: number) {
+/** 图片自适配
+ *  - 竖向图：宽度 ≤ 35vw
+ *  - 横向图：宽度 ≤ 65vw
+ *  - 高度自适应
+ */
+function fitImageToCanvas(img: HTMLImageElement) {
   const vw = window.innerWidth;
+
+  const isPortrait = img.height > img.width;
+  const maxVW = isPortrait ? 35 : 65; // ✅ 竖图窄，横图宽
+
   const maxWidth = (vw * maxVW) / 100;
-  const scale =
-    img.width > img.height ? maxWidth / img.width : maxWidth / img.height;
+  const scale = maxWidth / img.width;
+
   return {
     width: img.width * scale,
     height: img.height * scale,
   };
 }
+
