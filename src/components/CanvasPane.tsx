@@ -148,6 +148,7 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
     renderAll();
   }, [renderAll]);
 
+  // FIXME: 渲染不及时问题
   /** 点击：只负责入栈（统一渲染交给 useEffect） */
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!photoRef.current || !srcRef.current) return;
@@ -232,6 +233,7 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
   );
 }
 
+// FIXME: 分辨率问题 可能会导致模糊
 /** 自适配：竖图≤35vw，横图≤65vw（高自适应） */
 function fitImageToCanvas(img: HTMLImageElement) {
   const vw = window.innerWidth;

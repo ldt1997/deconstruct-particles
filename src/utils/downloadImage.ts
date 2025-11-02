@@ -1,3 +1,5 @@
+
+// FIXME: 无法导出webGL层
 export function downloadImage(elementId: string, filename = "artwork.png") {
   const el = document.getElementById(elementId);
   if (!el) return;
