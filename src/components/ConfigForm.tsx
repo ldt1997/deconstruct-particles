@@ -14,7 +14,7 @@ export default function ConfigForm({
 }) {
   const [config, setConfig] = useState({
     layout: "vertical",
-    background: "#F4ECE4",
+    background: "#F8F3EF",
     roughness: 0.4,
     dotSize: 16,
     contrast: 0.3,

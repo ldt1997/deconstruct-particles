@@ -20,7 +20,7 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
     layout = "vertical",
     dotSize = 16,
     roughness = 0.4,
-    background = "#F4ECE4",
+    background = "#F8F3EF",
     contrast = 0.3,
     fiber = 0.3,
     folds = 0.5,
@@ -183,9 +183,10 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
 
   return (
     <div style={{ overflow: "auto" }}>
-      <div style={containerStyle} id="canvas-pane">
+      <div style={containerStyle}>
         <canvas
           ref={photoRef}
+          id="photo-canvas"
           onClick={handleClick}
           style={{
             width: imgSize.width,
@@ -211,22 +212,19 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
               height: "100%",
             }}
           />
-          <div
-            style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
-          >
-            <PaperTexture
-              width={imgSize.width}
-              height={imgSize.height}
-              image={artUrl}
-              scale={1}
-              colorFront={background}
-              contrast={contrast}
-              fiber={fiber}
-              folds={folds}
-              colorBack="#fff"
-              roughness={roughness}
-            />
-          </div>
+          <PaperTexture
+            style={{ position: "absolute", inset: 0 }}
+            width={imgSize.width}
+            height={imgSize.height}
+            image={artUrl}
+            scale={1}
+            colorFront={background}
+            contrast={contrast}
+            fiber={fiber}
+            folds={folds}
+            colorBack="#fff"
+            roughness={roughness}
+          />
         </div>
       </div>
     </div>

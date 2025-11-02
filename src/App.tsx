@@ -19,7 +19,7 @@ export default function App() {
     <Layout style={{ height: "100vh" }}>
       <Content style={{ flex: 1, padding: 24 }}>
         <div style={{ marginBottom: 12 }}>
-          <Toolbar />
+          <Toolbar layout={config.layout}/>
         </div>
         {config.imageUrl && <CanvasPane config={config} />}
       </Content>

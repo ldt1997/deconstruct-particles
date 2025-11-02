@@ -7,9 +7,9 @@ import {
   IconDice,
 } from "@arco-design/web-react/icon";
 import { useDotsStore } from "../store/useDotsStore";
-import { downloadImage } from "../utils/downloadImage";
+import { downloadWithPaperTexture } from "../utils/downloadImage";
 
-export default function Toolbar() {
+export default function Toolbar({ layout }: { layout?: string }) {
   const { undo, redo, reset, randomize, history, future } = useDotsStore();
   return (
     <Space>
@@ -33,7 +33,7 @@ export default function Toolbar() {
       <Tooltip content="Download">
         <Button
           icon={<IconDownload />}
-          onClick={() => downloadImage("canvas-pane")}
+          onClick={() => downloadWithPaperTexture(layout)}
         />
       </Tooltip>
     </Space>
