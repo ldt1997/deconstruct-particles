@@ -169,59 +169,63 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
     layout === "vertical"
       ? {
           display: "flex",
-          overflow: "auto",
           flexDirection: "column-reverse",
+          width: "max-content",
           alignItems: "center",
         }
       : {
           display: "flex",
-          overflow: "auto",
+          width: "max-content",
           flexDirection: "row",
           alignItems: "center",
         };
 
   return (
-    <div style={containerStyle} id="canvas-pane">
-      <canvas
-        ref={photoRef}
-        onClick={handleClick}
-        style={{
-          width: imgSize.width,
-          height: imgSize.height,
-          cursor: "crosshair",
-        }}
-      />
-
-      {/* 右侧叠加：artCanvas + PaperTexture */}
-      <div
-        style={{
-          position: "relative",
-          width: imgSize.width,
-          height: imgSize.height,
-        }}
-      >
+    <div style={{ overflow: "auto" }}>
+      <div style={containerStyle} id="canvas-pane">
         <canvas
-          ref={artRef}
+          ref={photoRef}
+          onClick={handleClick}
           style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
+            width: imgSize.width,
+            height: imgSize.height,
+            cursor: "crosshair",
           }}
         />
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-          <PaperTexture
-            width={imgSize.width}
-            height={imgSize.height}
-            image={artUrl}
-            scale={1}
-            colorFront={background}
-            contrast={contrast}
-            fiber={fiber}
-            folds={folds}
-            colorBack="#fff"
-            roughness={roughness}
+
+        {/* 右侧叠加：artCanvas + PaperTexture */}
+        <div
+          style={{
+            position: "relative",
+            width: imgSize.width,
+            height: imgSize.height,
+          }}
+        >
+          <canvas
+            ref={artRef}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+            }}
           />
+          <div
+            style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+          >
+            <PaperTexture
+              width={imgSize.width}
+              height={imgSize.height}
+              image={artUrl}
+              scale={1}
+              colorFront={background}
+              contrast={contrast}
+              fiber={fiber}
+              folds={folds}
+              colorBack="#fff"
+              roughness={roughness}
+            />
+          </div>
         </div>
       </div>
     </div>
