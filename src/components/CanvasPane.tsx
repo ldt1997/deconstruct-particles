@@ -14,7 +14,13 @@ interface CanvasConfig {
   folds?: number;
 }
 
-export default function CanvasPane({ config }: { config: CanvasConfig }) {
+export default function CanvasPane({
+  config,
+  zoom = 1,
+}: {
+  config: CanvasConfig;
+  zoom?: number;
+}) {
   const {
     imageUrl = "",
     layout = "vertical",
@@ -153,16 +159,17 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!photoRef.current || !srcRef.current) return;
     const rect = photoRef.current.getBoundingClientRect();
-    const xCss = e.clientX - rect.left;
-    const yCss = e.clientY - rect.top;
+
+    // 考虑缩放比例
+    const xCss = (e.clientX - rect.left) / zoom;
+    const yCss = (e.clientY - rect.top) / zoom;
 
     const { width } = photoRef.current; // 内部像素宽度
     const nx = xCss / photoRef.current.clientWidth;
     const ny = yCss / photoRef.current.clientHeight;
-    const rNorm = dotSize / width; // 半径归一化到宽度
+    const rNorm = dotSize / width;
 
     addDot({ id: uuid(), x: nx, y: ny, radius: rNorm });
-    // 不在这里直接画，等待 dots 改变后统一 renderAll()
   };
 
   /** 布局 */
@@ -183,61 +190,77 @@ export default function CanvasPane({ config }: { config: CanvasConfig }) {
 
   return (
     <div style={{ overflow: "auto" }}>
-      <div style={containerStyle}>
-        <canvas
-          ref={photoRef}
-          id="photo-canvas"
-          onClick={handleClick}
-          style={{
-            width: imgSize.width,
-            height: imgSize.height,
-            cursor: "crosshair",
-          }}
-        />
-
-        {/* 右侧叠加：artCanvas + PaperTexture */}
-        <div
-          style={{
-            position: "relative",
-            width: imgSize.width,
-            height: imgSize.height,
-          }}
-        >
+      <div
+        style={{
+          transform: `scale(${zoom})`,
+          transformOrigin: "top left",
+          display: "inline-block",
+        }}
+      >
+        <div style={containerStyle}>
           <canvas
-            ref={artRef}
+            ref={photoRef}
+            id="photo-canvas"
+            onClick={handleClick}
             style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
+              width: imgSize.width,
+              height: imgSize.height,
+              cursor: "crosshair",
             }}
           />
-          <PaperTexture
-            style={{ position: "absolute", inset: 0 }}
-            width={imgSize.width}
-            height={imgSize.height}
-            image={artUrl}
-            scale={1}
-            colorFront={background}
-            contrast={contrast}
-            fiber={fiber}
-            folds={folds}
-            colorBack="#fff"
-            roughness={roughness}
-          />
+
+          {/* 右侧叠加：artCanvas + PaperTexture */}
+          <div
+            style={{
+              position: "relative",
+              width: imgSize.width,
+              height: imgSize.height,
+            }}
+          >
+            <canvas
+              ref={artRef}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+              }}
+            />
+            <PaperTexture
+              style={{ position: "absolute", inset: 0 }}
+              width={imgSize.width}
+              height={imgSize.height}
+              image={artUrl}
+              scale={1}
+              colorFront={background}
+              contrast={contrast}
+              fiber={fiber}
+              folds={folds}
+              colorBack="#fff"
+              roughness={roughness}
+            />
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// FIXME: 分辨率问题 可能会导致模糊
-/** 自适配：竖图≤35vw，横图≤65vw（高自适应） */
 function fitImageToCanvas(img: HTMLImageElement) {
-  const vw = window.innerWidth;
-  const isPortrait = img.height > img.width;
-  const maxVW = isPortrait ? 30 : 45;
-  const maxWidth = (vw * maxVW) / 100;
-  const scale = maxWidth / img.width;
-  return { width: img.width * scale, height: img.height * scale };
+  const maxPixel = 3000;
+  const ratio = img.width / img.height;
+
+  let width = img.width;
+  let height = img.height;
+
+  // 缩放以保证最长边 ≤ 3000
+  if (width > height && width > maxPixel) {
+    width = maxPixel;
+    height = maxPixel / ratio;
+  } else if (height >= width && height > maxPixel) {
+    height = maxPixel;
+    width = maxPixel * ratio;
+  }
+
+  return { width, height };
 }

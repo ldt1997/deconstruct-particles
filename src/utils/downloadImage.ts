@@ -35,12 +35,6 @@ export function downloadPaperTexture(layout: string, filename = "artwork.png") {
   });
 }
 
-// FIXME: 分辨率问题
-/**
- * 根据 layout 拼接 Photo + PaperTexture 两张画布导出 PNG
- * @param layout "vertical" | "horizontal"
- * @param filename 下载文件名
- */
 export function downloadWithPaperTexture(
   layout?: string,
   filename = "artwork.png"
@@ -64,23 +58,33 @@ export function downloadWithPaperTexture(
   const ph = paperCanvas.height;
   const fw = photoCanvas.width;
   const fh = photoCanvas.height;
+  console.log("Paper", pw, ph, "Photo", fw, fh);
 
-  // 根据 layout 决定新画布尺寸
+  // 缩放比（比例相同情况下取宽即可）
+  const scale = fw / pw;
+  const scaledWidth = fw;
+  const scaledHeight = ph * scale; // 等比例缩放
+
+  // 创建合并画布
   const merged = document.createElement("canvas");
   const ctx = merged.getContext("2d")!;
 
   if (layout === "vertical") {
-    merged.width = Math.max(pw, fw);
-    merged.height = ph + fh;
-    // 上：Paper，下：Photo
-    ctx.drawImage(paperCanvas, 0, 0);
-    ctx.drawImage(photoCanvas, 0, ph);
+    merged.width = fw;
+    merged.height = scaledHeight + fh;
+
+    // 上方缩放后的 Paper
+    ctx.drawImage(paperCanvas, 0, 0, pw, ph, 0, 0, scaledWidth, scaledHeight);
+    // 下方原始 Photo
+    ctx.drawImage(photoCanvas, 0, scaledHeight, fw, fh);
   } else {
-    merged.width = pw + fw;
-    merged.height = Math.max(ph, fh);
-    // 左：Photo，右：Paper
-    ctx.drawImage(photoCanvas, 0, 0);
-    ctx.drawImage(paperCanvas, fw, 0);
+    merged.width = scaledWidth + fw;
+    merged.height = Math.max(scaledHeight, fh);
+
+    // 左：Photo
+    ctx.drawImage(photoCanvas, 0, 0, fw, fh);
+    // 右：Paper（缩放后）
+    ctx.drawImage(paperCanvas, 0, 0, pw, ph, fw, 0, scaledWidth, scaledHeight);
   }
 
   // 导出 PNG
@@ -90,4 +94,3 @@ export function downloadWithPaperTexture(
   link.href = url;
   link.click();
 }
-

@@ -9,7 +9,11 @@ const { Sider, Content } = Layout;
 
 export default function App() {
   const { reset } = useDotsStore();
+  const [zoom, setZoom] = useState(1);
   const [config, setConfig] = useState<any>({});
+
+  const zoomIn = () => setZoom((z) => Math.min(3, z + 0.1));
+  const zoomOut = () => setZoom((z) => Math.max(0.2, z - 0.1));
 
   useEffect(() => {
     reset();
@@ -19,9 +23,9 @@ export default function App() {
     <Layout style={{ height: "100vh" }}>
       <Content style={{ flex: 1, padding: 24 }}>
         <div style={{ marginBottom: 12 }}>
-          <Toolbar layout={config.layout}/>
+          <Toolbar layout={config.layout} onZoomIn={zoomIn} onZoomOut={zoomOut}/>
         </div>
-        {config.imageUrl && <CanvasPane config={config} />}
+        {config.imageUrl && <CanvasPane config={config} zoom={zoom}/>}
       </Content>
       <Sider
         style={{

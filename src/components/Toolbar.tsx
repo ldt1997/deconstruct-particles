@@ -5,11 +5,21 @@ import {
   IconRefresh,
   IconDownload,
   IconDice,
+  IconZoomIn,
+  IconZoomOut,
 } from "@arco-design/web-react/icon";
 import { useDotsStore } from "../store/useDotsStore";
 import { downloadWithPaperTexture } from "../utils/downloadImage";
 
-export default function Toolbar({ layout }: { layout?: string }) {
+export default function Toolbar({
+  layout,
+  onZoomIn,
+  onZoomOut,
+}: {
+  layout?: string;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+}) {
   const { undo, redo, reset, randomize, history, future } = useDotsStore();
   return (
     <Space>
@@ -28,6 +38,12 @@ export default function Toolbar({ layout }: { layout?: string }) {
       </Tooltip>
       <Tooltip content="Reset">
         <Button icon={<IconRefresh />} onClick={reset} />
+      </Tooltip>
+      <Tooltip content="Zoom Out">
+        <Button icon={<IconZoomOut />} onClick={onZoomOut} />
+      </Tooltip>
+      <Tooltip content="Zoom In">
+        <Button icon={<IconZoomIn />} onClick={onZoomIn} />
       </Tooltip>
       {/* FIXME: don't work now */}
       <Tooltip content="Download">
