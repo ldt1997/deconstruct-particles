@@ -39,6 +39,8 @@ export default function CanvasPane({
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
   const [artUrl, setArtUrl] = useState<string>();
+  const artObjectUrlRef = useRef<string | null>(null);
+  const isEncodingRef = useRef(false);
   const { dots, addDot } = useDotsStore();
 
   /** 加载图像 */
@@ -77,6 +79,29 @@ export default function CanvasPane({
     // 首次完整渲染
     renderAll();
   }, [img]);
+
+  const renderTexture = () => {
+    if (!artRef.current) return;
+
+    // 如果上一次编码还没结束，直接跳过这一帧，避免排队一堆任务
+    if (isEncodingRef.current) return;
+    isEncodingRef.current = true;
+
+    artRef.current.toBlob((blob) => {
+      isEncodingRef.current = false;
+      if (!blob) return;
+
+      const url = URL.createObjectURL(blob);
+
+      // 回收旧的 URL，避免内存泄露
+      if (artObjectUrlRef.current) {
+        URL.revokeObjectURL(artObjectUrlRef.current);
+      }
+      artObjectUrlRef.current = url;
+
+      setArtUrl(url);
+    }, "image/png");
+  };
 
   /** 统一渲染：根据 src + dots 重绘两侧，并更新 PaperTexture  */
   const renderAll = useCallback(() => {
@@ -146,7 +171,7 @@ export default function CanvasPane({
     });
 
     // 同步 PaperTexture 预览
-    setArtUrl(artRef.current.toDataURL("image/png"));
+    renderTexture();
   }, [dots, background]);
 
   /** dots 或 background 变化时，统一重绘 */
@@ -171,6 +196,14 @@ export default function CanvasPane({
 
     addDot({ id: uuid(), x: nx, y: ny, radius: rNorm });
   };
+
+  useEffect(() => {
+    return () => {
+      if (artObjectUrlRef.current) {
+        URL.revokeObjectURL(artObjectUrlRef.current);
+      }
+    };
+  }, []);
 
   /** 布局 */
   const containerStyle: React.CSSProperties =
