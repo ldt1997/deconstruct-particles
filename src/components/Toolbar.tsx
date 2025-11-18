@@ -20,7 +20,7 @@ export default function Toolbar({
   onZoomIn?: () => void;
   onZoomOut?: () => void;
 }) {
-  const { undo, redo, reset, randomize, history, future } = useDotsStore();
+  const { undo, redo, reset, centerize, history, future } = useDotsStore();
   return (
     <Space>
       <Tooltip content="Undo">
@@ -33,8 +33,11 @@ export default function Toolbar({
       <Tooltip content="Redo">
         <Button icon={<IconRedo />} onClick={redo} disabled={!future?.length} />
       </Tooltip>
-      <Tooltip content="Randomize">
+      {/* <Tooltip content="Randomize">
         <Button icon={<IconDice />} onClick={randomize} />
+      </Tooltip> */}
+      <Tooltip content="Centerize">
+        <Button icon={<IconDice />} onClick={centerize} />
       </Tooltip>
       <Tooltip content="Reset">
         <Button icon={<IconRefresh />} onClick={reset} />
@@ -46,9 +49,10 @@ export default function Toolbar({
         <Button icon={<IconZoomIn />} onClick={onZoomIn} />
       </Tooltip>
       {/* FIXME: don't work now */}
-      <Tooltip content="Download">
+      <Tooltip content="Download (Not supported yet)">
         <Button
           icon={<IconDownload />}
+          disabled
           onClick={() => downloadWithPaperTexture(layout)}
         />
       </Tooltip>
