@@ -9,7 +9,7 @@ import { useState } from "react";
 
 export default function ConfigForm({
   onChange,
-  zoom = 1
+  zoom = 1,
 }: {
   onChange: (config: Record<string, unknown>) => void;
   zoom?: number;
@@ -106,10 +106,9 @@ export default function ConfigForm({
           {/* TODO: adjust size according to zoom level */}
           <div
             style={{
-              width: 50,
-              height: 50,
               overflow: "hidden",
-              display: "flex",
+              display: "inline-flex",
+              padding: 8,
               alignItems: "center",
               justifyContent: "center",
               border: "1px solid #ddd",
@@ -119,9 +118,8 @@ export default function ConfigForm({
           >
             <div
               style={{
-                width: config.dotSize,
-                height: config.dotSize,
-                transform: `scale(${zoom})`,
+                width: config.dotSize * 2,
+                height: config.dotSize * 2,
                 borderRadius: "50%",
                 backgroundColor: config.background, // 可用config.colorFront更一致
                 transition: "width 0.2s, height 0.2s",
