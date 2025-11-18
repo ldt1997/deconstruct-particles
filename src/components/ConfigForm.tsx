@@ -9,8 +9,10 @@ import { useState } from "react";
 
 export default function ConfigForm({
   onChange,
+  zoom = 1
 }: {
   onChange: (config: Record<string, unknown>) => void;
+  zoom?: number;
 }) {
   const [config, setConfig] = useState({
     layout: "vertical",
@@ -89,33 +91,24 @@ export default function ConfigForm({
         />
       </Form.Item>
 
-      {/* TODO: 优化展示 增加dot size 预览 */}
-      {/* <Form.Item label="Dot size">
-        <Slider
-          min={5}
-          max={15}
-          value={config.dotSize}
-          onChange={(v) => update("dotSize", v)}
-          step={1}
-        />
-      </Form.Item> */}
-
       <Form.Item label="Dot size">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Slider
-            min={6}
-            max={24}
+            min={10}
+            max={50}
             value={config.dotSize}
             onChange={(v) => update("dotSize", v)}
-            step={2}
+            step={5}
             style={{ flex: 1 }}
           />
 
           {/* 🔵 圆点预览 */}
+          {/* TODO: adjust size according to zoom level */}
           <div
             style={{
               width: 50,
               height: 50,
+              overflow: "hidden",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -126,8 +119,9 @@ export default function ConfigForm({
           >
             <div
               style={{
-                width: config.dotSize * 2,
-                height: config.dotSize * 2,
+                width: config.dotSize,
+                height: config.dotSize,
+                transform: `scale(${zoom})`,
                 borderRadius: "50%",
                 backgroundColor: config.background, // 可用config.colorFront更一致
                 transition: "width 0.2s, height 0.2s",

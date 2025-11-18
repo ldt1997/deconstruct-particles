@@ -14,6 +14,7 @@ export default function App() {
 
   const zoomIn = () => setZoom((z) => Math.min(3, z + 0.1));
   const zoomOut = () => setZoom((z) => Math.max(0.2, z - 0.1));
+  const resetZoom = () => setZoom(1);
 
   useEffect(() => {
     reset();
@@ -23,7 +24,7 @@ export default function App() {
     <Layout style={{ height: "100vh" }}>
       <Content style={{ flex: 1, padding: 24 }}>
         <div style={{ marginBottom: 12 }}>
-          <Toolbar layout={config.layout} onZoomIn={zoomIn} onZoomOut={zoomOut}/>
+          <Toolbar layout={config.layout} onZoomIn={zoomIn} onZoomOut={zoomOut} onResetZoom={resetZoom}/>
         </div>
         {config.imageUrl && <CanvasPane config={config} zoom={zoom}/>}
       </Content>
@@ -35,7 +36,7 @@ export default function App() {
           borderLeft: "1px solid #eee",
         }}
       >
-        <ConfigForm onChange={setConfig} />
+        <ConfigForm onChange={setConfig} zoom={zoom}/>
       </Sider>
     </Layout>
   );

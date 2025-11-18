@@ -14,7 +14,13 @@ interface CanvasConfig {
   folds?: number;
 }
 
-export default function CanvasPane({ config, zoom = 1 }: { config: CanvasConfig; zoom?: number }) {
+export default function CanvasPane({
+  config,
+  zoom = 1,
+}: {
+  config: CanvasConfig;
+  zoom?: number;
+}) {
   const {
     imageUrl = "",
     layout = "vertical",
@@ -30,7 +36,7 @@ export default function CanvasPane({ config, zoom = 1 }: { config: CanvasConfig;
   const artRef = useRef<HTMLCanvasElement>(null);
   const srcRef = useRef<HTMLCanvasElement | null>(null);
 
-  const { dots, addDot } = useDotsStore();
+  const { photoDots, artDots, addDot } = useDotsStore();
 
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
@@ -61,14 +67,17 @@ export default function CanvasPane({ config, zoom = 1 }: { config: CanvasConfig;
     }, "image/png");
   };
 
-  const drawDotsCutout = (ctx: CanvasRenderingContext2D, src: HTMLCanvasElement) => {
+  const drawDotsCutout = (
+    ctx: CanvasRenderingContext2D,
+    src: HTMLCanvasElement
+  ) => {
     const { width, height } = src;
 
     ctx.globalCompositeOperation = "source-over";
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(src, 0, 0, width, height);
 
-    dots.forEach(({ x, y, radius }) => {
+    photoDots.forEach(({ x, y, radius }) => {
       const px = x * width;
       const py = y * height;
       const r = radius * width;
@@ -90,7 +99,10 @@ export default function CanvasPane({ config, zoom = 1 }: { config: CanvasConfig;
     });
   };
 
-  const drawDotsArt = (ctx: CanvasRenderingContext2D, src: HTMLCanvasElement) => {
+  const drawDotsArt = (
+    ctx: CanvasRenderingContext2D,
+    src: HTMLCanvasElement
+  ) => {
     const { width, height } = src;
 
     ctx.globalCompositeOperation = "source-over";
@@ -98,11 +110,20 @@ export default function CanvasPane({ config, zoom = 1 }: { config: CanvasConfig;
     ctx.fillStyle = background;
     ctx.fillRect(0, 0, width, height);
 
-    dots.forEach(({ x, y, radius }) => {
-      const px = x * width;
-      const py = y * height;
-      const r = radius * width;
+    artDots.forEach((artDot, i) => {
+      const srcDot = photoDots[i];
+      if (!srcDot) return; // 长度不一致时安全处理
 
+      // 渲染位置用 artDot
+      const px = artDot.x * width;
+      const py = artDot.y * height;
+      const r = artDot.radius * width;
+
+      // 采样位置用 photoDot
+      const sx = srcDot.x * width;
+      const sy = srcDot.y * height;
+
+      // 创建圆形贴片
       const circle = document.createElement("canvas");
       circle.width = r * 2;
       circle.height = r * 2;
@@ -111,8 +132,11 @@ export default function CanvasPane({ config, zoom = 1 }: { config: CanvasConfig;
       cctx.beginPath();
       cctx.arc(r, r, r, 0, Math.PI * 2);
       cctx.clip();
-      cctx.drawImage(src, px - r, py - r, r * 2, r * 2, 0, 0, r * 2, r * 2);
 
+      // 从 photoDot 对应区域采样
+      cctx.drawImage(src, sx - r, sy - r, r * 2, r * 2, 0, 0, r * 2, r * 2);
+
+      // 粘贴到 art 的位置
       ctx.save();
       ctx.beginPath();
       ctx.arc(px, py, r, 0, Math.PI * 2);
@@ -134,7 +158,7 @@ export default function CanvasPane({ config, zoom = 1 }: { config: CanvasConfig;
     drawDotsArt(artRef.current.getContext("2d")!, src);
 
     updatePaperTextureURL();
-  }, [dots, background]);
+  }, [photoDots, artDots, background]);
 
   // ----------------------
   // Image loading
@@ -212,22 +236,56 @@ export default function CanvasPane({ config, zoom = 1 }: { config: CanvasConfig;
   // ----------------------
   const containerStyle: React.CSSProperties =
     layout === "vertical"
-      ? { display: "flex", flexDirection: "column-reverse", width: "max-content", alignItems: "center" }
-      : { display: "flex", width: "max-content", flexDirection: "row", alignItems: "center" };
+      ? {
+          display: "flex",
+          flexDirection: "column-reverse",
+          width: "max-content",
+          alignItems: "center",
+        }
+      : {
+          display: "flex",
+          width: "max-content",
+          flexDirection: "row",
+          alignItems: "center",
+        };
 
   return (
     <div style={{ overflow: "auto" }}>
-      <div style={{ transform: `scale(${zoom})`, transformOrigin: "top left", display: "inline-block" }}>
+      <div
+        style={{
+          transform: `scale(${zoom})`,
+          transformOrigin: "top left",
+          display: "inline-block",
+        }}
+      >
         <div style={containerStyle}>
           <canvas
             ref={photoRef}
             id="photo-canvas"
             onClick={handleClick}
-            style={{ width: imgSize.width, height: imgSize.height, cursor: "crosshair" }}
+            style={{
+              width: imgSize.width,
+              height: imgSize.height,
+              cursor: "crosshair",
+            }}
           />
 
-          <div style={{ position: "relative", width: imgSize.width, height: imgSize.height }}>
-            <canvas ref={artRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+          <div
+            style={{
+              position: "relative",
+              width: imgSize.width,
+              height: imgSize.height,
+            }}
+          >
+            <canvas
+              ref={artRef}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+              }}
+            />
 
             <PaperTexture
               style={{ position: "absolute", inset: 0 }}

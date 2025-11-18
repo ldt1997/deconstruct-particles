@@ -9,9 +9,10 @@ export interface Dot {
 }
 
 interface DotsState {
-  dots: Dot[];
-  history: Dot[][];
-  future: Dot[][];
+  photoDots: Dot[];
+  artDots: Dot[];
+  history: { photo: Dot[]; art: Dot[] }[];
+  future: { photo: Dot[]; art: Dot[] }[];
   addDot: (dot: Dot) => void;
   undo: () => void;
   redo: () => void;
@@ -22,65 +23,77 @@ interface DotsState {
 
 export const useDotsStore = create<DotsState>()(
   devtools((set, get) => ({
-    dots: [],
+    photoDots: [],
+    artDots: [],
     history: [],
     future: [],
+
     addDot: (dot) => {
-      const { dots, history } = get();
+      const { photoDots, artDots, history } = get();
       set({
-        dots: [...dots, dot],
-        history: [...history, dots],
+        photoDots: [...photoDots, dot],
+        artDots: [...artDots, dot],
+        history: [...history, { photo: photoDots, art: artDots }],
         future: [],
       });
     },
-    undo: () => {
-      const { history, dots, future } = get();
-      if (history.length === 0) return;
-      const prev = history[history.length - 1];
-      set({
-        dots: prev,
-        history: history.slice(0, -1),
-        future: [dots, ...future],
-      });
-    },
-    redo: () => {
-      const { future, dots, history } = get();
-      if (future.length === 0) return;
-      const next = future[0];
-      set({
-        dots: next,
-        history: [...history, dots],
-        future: future.slice(1),
-      });
-    },
-    reset: () => set({ dots: [], history: [], future: [] }),
-    randomize: () => {
-      const { dots } = get();
-      const randomized = dots.map((d) => ({
-        ...d,
-        x: Math.random(),
-        y: Math.random(),
-      }));
-      set({ dots: randomized, history: [], future: [] });
-    },
-    centerize: () => {
-      const { dots } = get();
-      if (!dots.length) return;
 
+    centerize: () => {
+      const { photoDots, artDots, history } = get();
+      if (!artDots.length) return;
+
+      const compress = 0.5;
       const centerX = 0.5;
       const centerY = 0.5;
 
-      // 你可以调节 compress (0 ~ 1)，越小越集中
-      const compress = 0.4;
-
-      const clustered = dots.map((d) => ({
+      const newArtDots = artDots.map((d) => ({
         ...d,
         x: centerX + (d.x - centerX) * compress,
         y: centerY + (d.y - centerY) * compress,
       }));
 
       set({
-        dots: clustered,
+        artDots: newArtDots,
+        history: [...history, { photo: photoDots, art: artDots }],
+        future: [],
+      });
+    },
+
+    undo: () => {
+      const { history, photoDots, artDots, future } = get();
+      if (!history.length) return;
+
+      const prev = history[history.length - 1];
+      set({
+        photoDots: prev.photo,
+        artDots: prev.art,
+        history: history.slice(0, -1),
+        future: [...future, { photo: photoDots, art: artDots }],
+      });
+    },
+
+    redo: () => {
+      const { future, history, photoDots, artDots } = get();
+      if (!future.length) return;
+
+      const next = future[future.length - 1];
+      set({
+        photoDots: next.photo,
+        artDots: next.art,
+        history: [...history, { photo: photoDots, art: artDots }],
+        future: future.slice(0, -1),
+      });
+    },
+
+    reset: () => set({ photoDots: [], artDots: [], history: [], future: [] }),
+
+    randomize: () => {
+      const { photoDots, artDots } = get();
+      const random = (d: Dot) => ({ ...d, x: Math.random(), y: Math.random() });
+
+      set({
+        photoDots: photoDots.map(random),
+        artDots: artDots.map(random),
         history: [],
         future: [],
       });
